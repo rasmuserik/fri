@@ -1,0 +1,23 @@
+{
+  "name": "fri",
+  "version": "0.0.1",
+  "description": "Functional Reactive Immutable",
+  "main": "fri.js",
+  "scripts": {
+    "test": "node fri.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/solsort/fri"
+  },
+  "keywords": [],
+  "author": "RasmusErik / solsort.com",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/solsort/fri/issues"
+  },
+  "homepage": "http://fri.solsort.com",
+  "dependencies": {
+    "direape": "^0.2.5"
+  }
+}
