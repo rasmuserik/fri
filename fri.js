@@ -6,8 +6,18 @@
 // [![travis](https://img.shields.io/travis/solsort/fri.svg)](https://travis-ci.org/solsort/fri)
 // [![npm](https://img.shields.io/npm/v/fri.svg)](https://www.npmjs.com/package/fri)
 //
-// # Functional Reactive Immutables
+// # Functional Reactive Immutable data
 //
+//
+var da = require('direape');
+da.testSuite('fri');
+
+if(require.main === module) {
+  da.ready(() => {
+    da.runTests('fri');
+  });
+}
+
 // ## Reactive State
 //
 // ### TODO `setState(o)`

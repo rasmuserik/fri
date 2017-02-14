@@ -26,19 +26,19 @@ pre {
   <body>
     <div id=app></div>
     <div id=readme></div>
-    <script src=https://unpkg.com/reun@0.1></script>
+    <script src=https://unpkg.com/direape@0.2></script>
+    <script src=https://unpkg.com/reun@0.2></script>
     <script>
-reun.run(`
+direape.ready(() => console.log('ready'));
+reun.eval(`
  var showdown = new (require('showdown@1.6.0')).Converter();
  var xhr = new XMLHttpRequest();
  xhr.onloadend = function() { 
    readme.innerHTML = showdown.makeHtml(xhr.responseText);
  };
  xhr.open('GET', './README.md'); xhr.send();
-    `,location.href);
-    </script>
-    <script src=fri.js></script>
-    <script>
+ `);
+reun.require('./fri.js', {main:true});
     </script>
     <script>document.write('<script src="//incoming.solsort.com/log.js?' + location.protocol + '//' + location.host + location.pathname + location.search + '"></s' + 'cript>');</script>
   </body>
