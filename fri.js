@@ -61,13 +61,14 @@ function scheduleReactions() {
 // ### runReactions()
 
 function runReactions() {
+  reactionsScheduled = false;
   while(dirtyReactions.size) {
     var reactions = Array.from(dirtyReactions);
+    dirtyReactions.clear();
     for(var i = 0; i < reactions.length; ++i) {
       reactions[i].update();
     }
   }
-  reactionsScheduled = false;
 }
 
 // ### new Reaction(fn)
@@ -89,7 +90,7 @@ Reaction.prototype.value = function() {
   }
 
   if(!this.outputs.size) {
-    var needsUpdate = false;
+    var needsUpdate = !this.counter;
     for(var input of this.inputs) {
       if(input.valueCounter > this.counter) {
         needsUpdate = true;
@@ -110,7 +111,7 @@ Reaction.prototype.update = function() {
 
   if(this.outputs.size) {
     for(var input of this.inputs) {
-      input.outputs.remove(this);
+      input.outputs.delete(this);
     }
   }
   this.inputs.clear();
@@ -142,6 +143,9 @@ Reaction.prototype.update = function() {
 var source = new Reaction();
 
 source.value = function() {
+  if(runningReaction) {
+    runningReaction.inputs.add(this);
+  }
   return this.val;
 };
 source.update = function(val) {
@@ -165,12 +169,15 @@ var sink = new Reaction(o => {
     }
   }
 });
+sink.id = 'sink';
 
 var drain = new Reaction();
+drain.id = 'drain';
+sink.outputs.add(drain);
 drain.outputs.add(drain);
-drain.inputs.add(sink);
 drain.update = () => undefined;
 drain.value = () => undefined;
+sink.update();
 
 // ### Implementation details
 // - dag, from a single source-input-reaction to a single drain-output-reaction.
@@ -197,12 +204,20 @@ drain.value = () => undefined;
 // ## Main
 if(require.main === module) {
   da.ready(() => da.nextTick(() => {
+
     da.runTests('fri');
     console.log('n');
-    var r = fri.reaction(() => console.log(fri.getState()));
-    fri.setState(1);
+    var r = fri.reaction(function r() { console.log('r', fri.getState())});
+    r.id = 'r';
     fri.rerun('hi', r);
-    fri.setState(5);
+    sink.update();
+    console.log(r);
+    fri.setState(1);
+    setTimeout(() => fri.setState(5), 100);
+    /*
+    r.update();
+    console.log(r);
+    */
   }));
 }
 
