@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+body {
+  font-family: sans-serif;
+  text-align: center;
+}
+#app {
+  text-align: left;
+}
+#readme {
+  display: inline-block;
+  text-align: left;
+  max-width: 60ex;
+}
+code {
+  background: #eee;
+}
+pre {
+  background: #eee;
+  padding: 1ex;
+}
+    </style>
+  </head>
+  <body>
+    <div id=app></div>
+    <div id=readme></div>
+    <script src=https://unpkg.com/reun@0.1></script>
+    <script>
+reun.run(`
+ var showdown = new (require('showdown@1.6.0')).Converter();
+ var xhr = new XMLHttpRequest();
+ xhr.onloadend = function() { 
+   readme.innerHTML = showdown.makeHtml(xhr.responseText);
+ };
+ xhr.open('GET', './README.md'); xhr.send();
+    `,location.href);
+    </script>
+    <script src=fri.js></script>
+    <script>
+    </script>
+    <script>document.write('<script src="//incoming.solsort.com/log.js?' + location.protocol + '//' + location.host + location.pathname + location.search + '"></s' + 'cript>');</script>
+  </body>
+</html>
