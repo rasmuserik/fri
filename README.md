@@ -10,21 +10,181 @@
 
 
     var da = require('direape');
-    console.log(da);
     da.testSuite('fri');
-    console.log(require.main);
+    var fri = {};
+    
     if(require.main === module) {
-      console.log('main');
-    } else  {
-      console.log('not main');
+      da.ready(() => {
+        da.runTests();
+      });
     }
+    
+    da.test('reaction', () => {
+      var r = fri.reaction(() => console.log(fri.getState()));
+      fri.setState(1);
+      fri.rerun('hi', r);
+      fri.setState(5);
+    });
     
 ## Reactive State
 
-### TODO `setState(o)`
-### TODO `getState()`
-### TODO `reaction(f, params)` returns reaction, which when called returns result
-### TODO `rerun(name, reaction)`
+### `setState(o)`
+    
+    fri.setState = (o) => {
+      return source.update(o);
+    };
+    
+### `getState()`
+    
+    fri.getState = () => {
+      return source.value();
+    };
+    
+### `reaction(f, params)` returns reaction, which when called returns result
+    
+    fri.reaction = function(fn) {
+      return new Reaction(fn, da.slice(arguments, 1));
+    };
+    
+### `rerun(name, reaction)`
+    
+    fri.rerun = (name, reaction) => {
+      drains.set(name, reaction);
+      dirtyReactions.add(sink);
+      scheduleReactions();
+    };
+    
+### `Reaction`
+    
+    var runningReaction;
+    
+    var reactionCounter = 0;
+    var dirtyReactions = new Set();
+    var reactionsScheduled = false;
+    
+### scheduleReactions()
+    
+    function scheduleReactions() {
+      if(!reactionsScheduled) {
+        reactionsScheduled = true;
+        setTimeout(runReactions, 0);
+      }
+    }
+    
+### runReactions()
+    
+    function runReactions() {
+      while(dirtyReactions.size) {
+        var reactions = Array.from(dirtyReactions);
+        for(var i = 0; i < reactions.length; ++i) {
+          reactions[i].update();
+        }
+      }
+      reactionsScheduled = false;
+    }
+    
+### new Reaction(fn)
+    
+    function Reaction(fn, args) {
+      this.fn = fn;
+      this.args = args;
+      this.valueCounter = 0;
+      this.counter = 0;
+      this.inputs = new Set();
+      this.outputs = new Set();
+    }
+    
+### Reaction.value()
+    
+    Reaction.prototype.value = function() {
+      if(runningReaction) {
+        runningReaction.inputs.add(this);
+      }
+    
+      if(!this.outputs.size) {
+        var needsUpdate = false;
+        for(var input of this.inputs) {
+          if(input.valueCounter > this.counter) {
+            needsUpdate = true;
+          }
+        }
+        if(needsUpdate) {
+          this.update();
+        }
+      }
+      return this.val;
+    }
+    
+### Reaction.update()
+    
+    Reaction.prototype.update = function() {
+      var prevReaction = runningReaction;
+      runningReaction = this;
+    
+      if(this.outputs.size) {
+        for(var input of this.inputs) {
+          input.outputs.remove(this);
+        }
+      }
+      this.inputs.clear();
+    
+      var value = this.fn.apply(this, this.args);
+      this.counter = ++reactionCounter;
+      if(!da.equals(value, this.val)) {
+        this.valueCounter = this.counter;
+      }
+    
+      runningReaction = undefined;
+      if(this.outputs.size) {
+        for(input of this.inputs) {
+          input.outputs.add(this);
+        }
+        for(var output of this.outputs) {
+          if(!output.outputs.size) {
+            this.outputs.delete(output);
+          } 
+          dirtyReactions.add(output);
+        }
+      }
+    
+      runningReaction = prevReaction;
+    };
+    
+### source
+    
+    var source = new Reaction();
+    
+    source.value = function() {
+      return this.val;
+    };
+    source.update = function(val) {
+      if(arguments.length === 1 && !da.equals(val, this.val)) {
+        this.val = val;
+        this.valueCounter = this.counter = ++reactionCounter;
+        for(var output of this.outputs) {
+          dirtyReactions.add(output);
+        }
+        scheduleReactions();
+      }
+    };
+    
+### drain
+    var drains = new Map();
+    
+    var sink = new Reaction(o => {
+      for(var reaction of drains.values()) {
+        if(reaction && reaction.value) {
+          reaction.value();
+        }
+      }
+    });
+    
+    var drain = new Reaction();
+    drain.outputs.add(drain);
+    drain.inputs.add(sink);
+    drain.update = () => undefined;
+    drain.value = () => undefined;
+    
 ### Implementation details
 - dag, from a single source-input-reaction to a single drain-output-reaction.
 
