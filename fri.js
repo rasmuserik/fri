@@ -6,9 +6,20 @@
 // [![travis](https://img.shields.io/travis/solsort/fri.svg)](https://travis-ci.org/solsort/fri)
 // [![npm](https://img.shields.io/npm/v/fri.svg)](https://www.npmjs.com/package/fri)
 //
-// # Functional Reactive Immutable data
+// # Functional Reactive Immutable library
 //
-// **We are not there yet...** Currently it is a single state atom, containing and immutable state, which you can subscribe to, and which has functions for simple updates.
+// This is a utility library intended for [Functional Reactive Programming](https://en.wikipedia.org/wiki/Functional_reactive_programming).
+//
+// **We are not there yet...** The current initial version is just an atomic state, where you can subscribe to changes. Not functional reactive immutable yet :(
+//
+// The, yet unimplemented, plan is
+//
+// - reactions - similar to reagent
+// - simple immutable JSON datastructure, like immutable-js but simpler / more lightweight, *and optimised for reagent-like reactions*
+//
+// The goal is inspired by <https://github.com/Day8/re-frame#readme>
+//
+// ## Dependencies, and state
 //
 var da = require('direape');
 var fri = module.exports; da.testSuite('fri');
