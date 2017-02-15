@@ -18,6 +18,12 @@
   },
   "homepage": "http://fri.solsort.com",
   "dependencies": {
-    "direape": "^0.2.5"
+    "direape": "^0.2.5",
+    "immutable": "^3.8.1"
+  },
+  "devDependencies": {
+    "eslint": "^3.15.0",
+    "live-server": "^1.2.0",
+    "uglify-js-harmony": "^2.6.2"
   }
 }

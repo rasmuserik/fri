@@ -1,4 +1,4 @@
-if [ ! -e node_modules/.bin/live-server ]; then npm install --save-dev live-server eslint uglify-js-harmony; fi
+if [ ! -e node_modules/.bin/live-server ]; then npm install --save-dev live-server eslint uglify-js-harmony; npm install; fi
 
 ./node_modules/.bin/live-server --no-browser --ignore=node_modules &
 echo $! > .pid-live-server
