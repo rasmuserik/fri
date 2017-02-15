@@ -10,8 +10,8 @@
   },
   "extends": "eslint:recommended",
   "rules": {
-    "no-console": "off",
-    "no-unused-vars": "off",
+    "no-console": 0,
+    "no-unused-vars": 0,
     "indent": [
       "warn",
       2
