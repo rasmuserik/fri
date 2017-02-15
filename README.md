@@ -8,7 +8,7 @@
 
 # Functional Reactive Immutable data
 
-*Under heavy development, do not use yet*
+**We are not there yet...** Currently it is a single state atom, containing and immutable state, which you can subscribe to, and which has functions for simple updates.
 
     var da = require('direape');
     var fri = module.exports; da.testSuite('fri');
