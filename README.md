@@ -10,24 +10,33 @@
 
 This is a utility library intended for [Functional Reactive Programming](https://en.wikipedia.org/wiki/Functional_reactive_programming).
 
-The idea for the library is inspired by <https://github.com/Day8/re-frame#readme>, and the goal is to have:
+The idea for the library is inspired from experience with [re-frame](https://github.com/Day8/re-frame#readme), and the goal is to have:
 
-- reactions - similar to reagent
-- simple immutable JSON datastructure, like immutable-js but simpler / more lightweight, *and optimised for reagent-like reactions*
+- reactions - similar to [reagent](https://reagent-project.github.com/)
+- simple immutable JSON datastructure, like [immutable-js](https://facebook.github.io/immutable-js/) but simpler / more lightweight, *and optimised for reagent-like reactions*
 
 **We are not there yet...** The current initial version is just an atomic state, where you can subscribe to changes. **Not functional reactive immutable yet** :( This is the minimal needed for the current applications that I am writing.
 
 
-## Dependencies, and state
+## Initialisation
 
+This builds upon [direape](https://direape.solsort.com) for message passing, and unit testing.
+    
     var da = require('direape');
     var fri = module.exports; da.testSuite('fri');
+    
+Use `immutable-js` for the time being, - on then long term, I want to replace this by a more lightweight version, optimised for reactive usage.
+    
     var immutable = require('immutable');
     
-    var state, dirtyState, stateAccessed, 
-        subscribers, eventSubscribers;
+State, is similar to a single application state atom in clojurescript apps.
     
-## `fri:get` `getJS(path, defaultValue)`
+    var state, dirtyState, stateAccessed; 
+    var subscribers, eventSubscribers;
+    
+## API
+
+### `getJS(path, defaultValue)`
     
     fri.getJS = (path, defaultValue) => {
       path = toPath(path);
@@ -35,12 +44,10 @@ The idea for the library is inspired by <https://github.com/Day8/re-frame#readme
       return toJS(state.getIn(path, defaultValue));
     };
     
-    da.handle('fri:get', fri.getJS);
-    
     da.test('getJS', () => 
         da.assertEquals(fri.getJS('undefined', 123), 123));
     
-## `fri:set` `setJS(path, value)`
+### `setJS(path, value)`
     
     fri.setJS = (path, value) => {
       path = toPath(path);
@@ -48,8 +55,6 @@ The idea for the library is inspired by <https://github.com/Day8/re-frame#readme
       state = setIn(state, path, value);
       requestUpdate();
     };
-    
-    da.handle('fri:set', fri.setJS);
     
     da.test('setJS+getJS', () => {
       fri.setJS(['foo', 2, 'bar'], 'hello');
@@ -60,7 +65,7 @@ The idea for the library is inspired by <https://github.com/Day8/re-frame#readme
       da.assertEquals(fri.getJS(['foo', 2]), {bar: 'hello'});
     });
     
-## `fri.rerun(name, fn)`
+### `rerun(name, fn)`
     
     fri.rerun = (name, fn) => {
       if(fn) {
@@ -94,15 +99,29 @@ The idea for the library is inspired by <https://github.com/Day8/re-frame#readme
       });
     }));
     
-## `fri:subscribe`, `fri:unsubscribe`
+## Handlers
 
+### `fri:get (path, defaultValue)`
+    
+    da.handle('fri:get', fri.getJS);
+    
+### `fri:set (path, value)`
+    
+    da.handle('fri:set', fri.setJS);
+    
+### `fri:subscribe (pid, name, path)`
     
     da.handle('fri:subscribe', (pid, name, path) =>
         da.jsonify(fri.rerun(
             `fri:subscribe ${path} -> ${name}@${pid}`,
             () => da.emit(pid, name, path, fri.getJS(path)))));
+    
+### `fri:unsubscribe (pid, name, path)`
+    
     da.handle('fri:unsubscribe', (pid, name, path) =>
         fri.rerun(`fri:subscribe ${path} -> ${name}@${pid}`));
+    
+### Unit testing
     
     da.test('handle subscribe/unsubscribe', 
         () => new Promise((resolve, reject) => {
