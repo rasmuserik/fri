@@ -10,14 +10,13 @@
 //
 // This is a utility library intended for [Functional Reactive Programming](https://en.wikipedia.org/wiki/Functional_reactive_programming).
 //
-// **We are not there yet...** The current initial version is just an atomic state, where you can subscribe to changes. Not functional reactive immutable yet :(
-//
-// The, yet unimplemented, plan is
+// The idea for the library is inspired by <https://github.com/Day8/re-frame#readme>, and the goal is to have:
 //
 // - reactions - similar to reagent
 // - simple immutable JSON datastructure, like immutable-js but simpler / more lightweight, *and optimised for reagent-like reactions*
 //
-// The goal is inspired by <https://github.com/Day8/re-frame#readme>
+// **We are not there yet...** The current initial version is just an atomic state, where you can subscribe to changes. **Not functional reactive immutable yet** :( This is the minimal needed for the current applications that I am writing.
+//
 //
 // ## Dependencies, and state
 //
@@ -25,7 +24,8 @@ var da = require('direape');
 var fri = module.exports; da.testSuite('fri');
 var immutable = require('immutable');
 
-var state, dirtyState, stateAccessed, subscribers, eventSubscribers;
+var state, dirtyState, stateAccessed, 
+    subscribers, eventSubscribers;
 
 // ## `fri:get` `getJS(path, defaultValue)`
 
@@ -37,7 +37,8 @@ fri.getJS = (path, defaultValue) => {
 
 da.handle('fri:get', fri.getJS);
 
-da.test('getJS', () => da.assertEquals(fri.getJS('undefined', 123), 123));
+da.test('getJS', () => 
+    da.assertEquals(fri.getJS('undefined', 123), 123));
 
 // ## `fri:set` `setJS(path, value)`
 
@@ -81,9 +82,12 @@ da.test('rerun', () => new Promise((resolve, reject) => {
 
   fri.rerun('rerun-test', () => {
     ++i;
-    da.assert(i !== 1 || fri.getJS('rerun-test') === undefined);
-    da.assert(i !== 2 || fri.getJS('rerun-test') === 123);
-    da.assert(i !== 3 || fri.getJS('rerun-test') === 456);
+    da.assert(i !== 1 || 
+        fri.getJS('rerun-test') === undefined);
+    da.assert(i !== 2 || 
+        fri.getJS('rerun-test') === 123);
+    da.assert(i !== 3 || 
+        fri.getJS('rerun-test') === 456);
     if(i === 3) {
       resolve();
     }
@@ -94,35 +98,41 @@ da.test('rerun', () => new Promise((resolve, reject) => {
 //
 
 da.handle('fri:subscribe', (pid, name, path) =>
-    da.jsonify(fri.rerun(`fri:subscribe ${path} -> ${name}@${pid}`,
+    da.jsonify(fri.rerun(
+        `fri:subscribe ${path} -> ${name}@${pid}`,
         () => da.emit(pid, name, path, fri.getJS(path)))));
 da.handle('fri:unsubscribe', (pid, name, path) =>
     fri.rerun(`fri:subscribe ${path} -> ${name}@${pid}`));
 
-da.test('handle subscribe/unsubscribe', () => new Promise((resolve, reject) => {
-  var i = 0;
-  da.handle('fri:test:subscribe', (path, data) => {
-    ++i;
-    try {
-      da.assertEquals(path, 'test-sub');
-      if(i === 1) {
-        da.assertEquals(data, undefined);
-      } else if(i === 2) {
-        da.assertEquals(data, 'hello'); 
-      } else {
-        da.assert(false);
-      }
-    } catch(e) {
-      reject(e);
-    }
-  });
-  da.emit(da.pid, 'fri:subscribe', da.pid, 'fri:test:subscribe', 'test-sub');
-  setTimeout(() => fri.setJS('test-sub', 'hello'), 100);
-  setTimeout(() => da.emit(da.pid, 'fri:unsubscribe', 
-        da.pid, 'fri:test:subscribe', 'test-sub'), 150); 
-  setTimeout(() => fri.setJS('test-sub', 'arvh'), 200);
-  setTimeout(() => { da.assertEquals(i, 2); resolve(); }, 400);
-}));
+da.test('handle subscribe/unsubscribe', 
+    () => new Promise((resolve, reject) => {
+      var i = 0;
+      da.handle('fri:test:subscribe', (path, data) => {
+        ++i;
+        try {
+          da.assertEquals(path, 'test-sub');
+          if(i === 1) {
+            da.assertEquals(data, undefined);
+          } else if(i === 2) {
+            da.assertEquals(data, 'hello'); 
+          } else {
+            da.assert(false);
+          }
+        } catch(e) {
+          reject(e);
+        }
+      });
+      da.emit(da.pid, 'fri:subscribe', 
+          da.pid, 'fri:test:subscribe', 'test-sub');
+      setTimeout(() => fri.setJS('test-sub', 'hello'), 100);
+      setTimeout(() => da.emit(da.pid, 'fri:unsubscribe', 
+            da.pid, 'fri:test:subscribe', 'test-sub'), 150); 
+      setTimeout(() => fri.setJS('test-sub', 'arvh'), 200);
+      setTimeout(() => { 
+        da.assertEquals(i, 2); 
+        resolve(); 
+      }, 400);
+    }));
 
 // ## Implementation details
 
@@ -139,7 +149,8 @@ var lastUpdate = Date.now();
 
 function requestUpdate() {
   if(!updateRequested) {
-    setTimeout(updateSubscribers, Math.max(0, 1000/60 - (Date.now() - lastUpdate)));
+    setTimeout(updateSubscribers, 
+        Math.max(0, 1000/60 - (Date.now() - lastUpdate)));
     updateRequested = true;
   }
 }
@@ -190,7 +201,8 @@ function setIn(o, path, value) {
         o = new immutable.Map();
       }
     }
-    return o.set(key, setIn(o.get(path[0]), path.slice(1), value));
+    return o.set(key, setIn(o.get(path[0]), 
+          path.slice(1), value));
   } else {
     return immutable.fromJS(value);
   }
@@ -199,7 +211,8 @@ function setIn(o, path, value) {
 // ### toJS
 
 function toJS(o) {
-  if(typeof o === 'object' && o !== null && typeof o.toJS === 'function') {
+  if(typeof o === 'object' && o !== null && 
+      typeof o.toJS === 'function') {
     o = o.toJS();
   }
   return o;
