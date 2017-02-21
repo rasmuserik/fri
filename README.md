@@ -60,7 +60,9 @@ State, is similar to a single application state atom in clojurescript apps.
       fri.setJS(['foo', 2, 'bar'], 'hello');
       fri.setJS(['bar'], {quux: 123});
       fri.setJS('baz', 345);
+      fri.setJS('qux.bar', 7);
       da.assertEquals(fri.getJS('bar'), {quux: 123});
+      da.assertEquals(fri.getJS(['qux', 'bar']), 7);
       da.assertEquals(fri.getJS(['baz']), 345);
       da.assertEquals(fri.getJS(['foo', 2]), {bar: 'hello'});
     });
@@ -240,7 +242,9 @@ State, is similar to a single application state atom in clojurescript apps.
 ### toPath
     
     function toPath(arr) {
-      if(!Array.isArray(arr)) {
+      if(typeof arr === 'string') {
+        arr = arr.split('.');
+      } else if(!Array.isArray(arr)) {
         arr = [arr];
       }
       return arr;
