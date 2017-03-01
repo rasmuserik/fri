@@ -25,6 +25,10 @@
 var da = require('direape');
 var fri = module.exports; da.testSuite('fri');
 
+fri.info = {
+  github: 'solsort/fri'
+};
+
 // Use `immutable-js` for the time being, - on then long term, I want to replace this by a more lightweight version, optimised for reactive usage.
 
 var immutable = require('immutable');
