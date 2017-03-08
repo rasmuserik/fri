@@ -215,12 +215,10 @@ function setIn(o, path, value) {
   if(path.length) {
     var key = path[0];
     var rest = path.slice(1);
-    if(!o) {
-      if(typeof key === 'number') {
+    if(typeof key === 'number' && !(o instanceof immutable.List)) {
         o = new immutable.List();
-      } else {
+    } else if(!(o instanceof immutable.Map)) {
         o = new immutable.Map();
-      }
     }
     return o.set(key, setIn(o.get(path[0]), 
           path.slice(1), value));
